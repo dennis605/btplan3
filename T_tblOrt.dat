@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<TableData>
+  <Rows>
+    <Row_1>
+      <field_0 name="ID" binary="false" null="false" value="1"/>
+      <field_1 name="NameOrt" binary="false" null="false">Wohnzimmer</field_1>
+    </Row_1>
+    <Row_2>
+      <field_0 name="ID" binary="false" null="false" value="2"/>
+      <field_1 name="NameOrt" binary="false" null="false">Besch/#228/ftigungstherapie</field_1>
+    </Row_2>
+    <Row_3>
+      <field_0 name="ID" binary="false" null="false" value="3"/>
+      <field_1 name="NameOrt" binary="false" null="false">Wohnbereich</field_1>
+    </Row_3>
+    <Row_4>
+      <field_0 name="ID" binary="false" null="false" value="13"/>
+      <field_1 name="NameOrt" binary="false" null="false">Testraum</field_1>
+    </Row_4>
+  </Rows>
+</TableData>

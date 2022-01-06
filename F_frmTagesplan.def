@@ -1,0 +1,110 @@
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Dim WithEvents objListViewTagesplan As MSComctlLib.ListView
+Attribute objListViewTagesplan.VB_VarHelpID = -1
+
+Private Sub Form_Current()
+    KontrollkaestchenAktivieren
+End Sub
+
+Private Sub Form_Load()
+    Set objListViewTagesplan = Me.ctlListViewTagesplan.Object
+    With objListViewTagesplan
+        .Arrange = lvwAutoLeft
+        .Checkboxes = True
+        .Appearance = ccFlat
+        .BorderStyle = ccNone
+        '.View = lvwList
+        .View = lvwReport
+        .LabelWrap = True
+        .FullRowSelect = True
+        .ColumnHeaders.Clear
+        .ColumnHeaders.Add 1, "Name", "Veranstaltunge", 3000
+        .ColumnHeaders.Add 2, "Start", "Start Veranstalrung", 2000
+        .ColumnHeaders.Add
+        
+    End With
+    ListViewFuellen
+End Sub
+
+Private Sub KontrollkaestchenAktivieren()
+    Dim db As DAO.Database
+    Dim rst As DAO.Recordset
+    Dim objListitem As MSComctlLib.ListItem
+    Set db = CurrentDb
+    Set objListViewTagesplan = Me.ctlListViewTagesplan.Object
+    
+    
+    
+    For Each objListitem In objListViewTagesplan.ListItems
+        objListitem.Checked = False
+        
+        
+    Next objListitem
+    If Not Me.newRecord Then
+        Dim SQL As String
+        Set rst = db.OpenRecordset("SELECT * FROM qryVeranstaltung_aktiv WHERE frkTagesplan = " & Me!idTagesplan, dbOpenDynaset)
+        Do While Not rst.EOF
+            With objListViewTagesplan.ListItems("a" & rst!idVeranstaltung)
+                .Checked = Not IsNull(rst!idVeranstaltung)
+            End With
+            rst.MoveNext
+        Loop
+    End If
+    Set db = Nothing
+End Sub
+
+Private Sub ListViewFuellen()
+    Dim db As DAO.Database
+    Dim rst As DAO.Recordset
+    Dim objListitem As MSComctlLib.ListItem
+    Dim objListitem2 As MSComctlLib.ListItem
+    Set db = CurrentDb
+    Set rst = db.OpenRecordset("SELECT * FROM qryVeranstaltung_alle", dbOpenDynaset)
+    objListViewTagesplan.ListItems.Clear
+    Do While Not rst.EOF
+        With objListViewTagesplan
+
+            Set objListitem = .ListItems.Add(, "a" & rst!idVeranstaltung, rst!txtVeranstaltungName)
+            
+            With objListitem
+                .ListSubItems.Add , , rst!idVeranstaltung
+                
+                If rst!dateVeranstaltungAnfang = "few" Then
+                    rst!dateVeranstaltungAnfang = "00:00"
+                End If
+                
+                .ListSubItems.Add 1, "start", rst!dateVeranstaltungAnfang
+            End With
+            
+           
+
+        End With
+        rst.MoveNext
+    Loop
+    Set db = Nothing
+End Sub
+
+Private Sub objListViewTagesplan_ItemCheck(ByVal Item As MSComctlLib.ListItem)
+    'TODO : hier geht implementierung weiter
+    Dim db As DAO.Database
+    Dim lngVeransaltungID As Long
+    Set db = CurrentDb
+    lngVeransaltungID = Mid(Item.Key, 2)
+    If IsNull(Me!idTagesplan) Then
+        Item.Checked = False
+        MsgBox "Legen Sie zunächst einen Tagesplan an."
+        Exit Sub
+    End If
+    If Item.Checked Then
+        db.Execute "INSERT INTO tblVeranstaltungTagesplan(frkTagesplan, frkVeranstaltung) VALUES(" & Me!idTagesplan & ", " & lngVeransaltungID & ")", dbFailOnError
+    Else
+        db.Execute "DELETE FROM tblVeranstaltungTagesplan WHERE frkTagesplan = " & Me!idTagesplan & " AND frkVeranstaltung = " & lngVeransaltungID, dbFailOnError
+    End If
+End Sub

@@ -1,0 +1,69 @@
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Dim inEdit As Boolean
+Private mIsUserUpdate As Boolean                 'Flag
+
+Private Sub btnVeranstaltungAbbruch_Click()
+
+    cmbVeranstaltung.Enabled = True
+    
+    Me.Undo
+
+End Sub
+
+Private Sub btnVeranstaltungAnlegen_Click()
+    DoCmd.GoToRecord , , acNewRec
+    'Veranstaltung auswählen wird deaktiviert
+    cmbVeranstaltung.Enabled = True
+    Me!btnVeranstaltungAbbruch.Visible = True
+    'inEdit = True
+End Sub
+
+Private Sub btnVeranstaltungSpeichern_Click()
+    If Not mIsUserUpdate Then Cancel = True
+    '...
+    'Do work
+    '...
+    
+    If Not Me!txtVeranstaltungName = ok Then
+
+    
+        mIsUserUpdate = True                     'OK to save
+        DoCmd.RunCommand acCmdSaveRecord
+        mIsUserUpdate = False                    'Revert
+    
+    
+    
+    
+    End If
+End Sub
+
+Private Sub Form_BeforeUpdate(Cancel As Integer)
+
+
+    If Not mIsUserUpdate Then Cancel = True
+
+
+End Sub
+
+Private Sub Form_Current()
+    Me!btnVeranstaltungAbbruch.Visible = True
+    
+
+End Sub
+
+Private Sub Form_Load()
+    Me!btnVeranstaltungAbbruch.Visible = True
+    inEdit = False
+ 
+End Sub
+
+Private Sub Löschen_Click()
+    On Error Resume Next
+    RunCommand acCmdDeleteRecord
+End Sub

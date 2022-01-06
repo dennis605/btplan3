@@ -1,0 +1,24 @@
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub cmdSql2Vba_Click()
+    Dim strSQL As String
+    'Purpose:   Convert a SQL statement into a string to paste into VBA code.
+    Const strcLineEnd = " "" & vbCrLf & _" & vbCrLf & """"
+    
+    If IsNull(Me.txtSql) Then
+        Beep
+    Else
+        strSQL = Me.txtSql
+        strSQL = Replace(strSQL, """", """""")   'Double up any quotes.
+        strSQL = Replace(strSQL, vbCrLf, strcLineEnd)
+        strSQL = "strSql = """ & strSQL & """"
+        Me.txtVBA = strSQL
+        Me.txtVBA.SetFocus
+        RunCommand acCmdCopy
+    End If
+End Sub

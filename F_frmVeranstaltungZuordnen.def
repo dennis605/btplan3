@@ -1,0 +1,197 @@
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Dim WithEvents objListView As MSComctlLib.ListView
+Attribute objListView.VB_VarHelpID = -1
+Dim WithEvents objListView2 As MSComctlLib.ListView
+Attribute objListView2.VB_VarHelpID = -1
+
+Private Sub Form_Current()
+    KontrollkaestchenAktivieren
+    KontrollkaestchenAktivieren2
+End Sub
+
+Private Sub Form_Load()
+    Set objListView = Me.ctlListView.Object
+    With objListView
+        .Arrange = lvwAutoLeft
+        .Checkboxes = True
+        .Appearance = ccFlat
+        .BorderStyle = ccNone
+        '.View = lvwList
+        .View = lvwReport
+        .LabelWrap = True
+        .FullRowSelect = True
+        .ColumnHeaders.Clear
+        .ColumnHeaders.Add 1, "Name Personal", "Name", 3000
+    End With
+    ListViewFuellen
+    
+    
+    
+    
+    ''''''''''''''''''''''''''
+    Set objListView2 = Me.ctlListView2.Object
+    With objListView2
+        .Arrange = lvwAutoLeft
+        .Checkboxes = True
+        .Appearance = ccFlat
+        .BorderStyle = ccNone
+        '.View = lvwList
+        .View = lvwReport
+        .LabelWrap = True
+        .FullRowSelect = True
+        .ColumnHeaders.Clear
+        .ColumnHeaders.Add 1, "Name Bewohner", "Name", 3000
+    End With
+    ListViewFuellen2
+    
+    
+    
+    ''''''''''''''''''''''''''
+    
+    
+    
+End Sub
+
+Private Sub KontrollkaestchenAktivieren()
+    Dim db As DAO.Database
+    Dim rst As DAO.Recordset
+    Dim objListitem As MSComctlLib.ListItem
+    Set db = CurrentDb
+    Set objListView = Me.ctlListView.Object
+    
+    
+    
+    For Each objListitem In objListView.ListItems
+        objListitem.Checked = False
+        
+        
+    Next objListitem
+    If Not Me.newRecord Then
+        Dim SQL As String
+        Set rst = db.OpenRecordset("SELECT * FROM qryPersonal_aktiv WHERE frkVeranstaltung = " & Me!idVeranstaltung, dbOpenDynaset)
+        Do While Not rst.EOF
+            With objListView.ListItems("a" & rst!idPersonal)
+                .Checked = Not IsNull(rst!idPersonal)
+            End With
+            rst.MoveNext
+        Loop
+    End If
+    Set db = Nothing
+End Sub
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private Sub KontrollkaestchenAktivieren2()
+    Dim db As DAO.Database
+    Dim rst As DAO.Recordset
+    Dim objListitem2 As MSComctlLib.ListItem
+    Set db = CurrentDb
+    Set objListView2 = Me.ctlListView2.Object
+    
+    
+    
+    For Each objListitem2 In objListView2.ListItems
+        objListitem2.Checked = False
+        
+        
+    Next objListitem2
+    If Not Me.newRecord Then
+        Dim SQL As String
+        Set rst = db.OpenRecordset("SELECT * FROM qryBewohner_aktiv WHERE frkVeranstaltung = " & Me!idVeranstaltung, dbOpenDynaset)
+        Do While Not rst.EOF
+            With objListView2.ListItems("a" & rst!idBewohner)
+                .Checked = Not IsNull(rst!idBewohner)
+            End With
+            rst.MoveNext
+        Loop
+    End If
+    Set db = Nothing
+End Sub
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+
+Private Sub ListViewFuellen()
+    Dim db As DAO.Database
+    Dim rst As DAO.Recordset
+    Dim objListitem As MSComctlLib.ListItem
+    Set db = CurrentDb
+    Set rst = db.OpenRecordset("SELECT * FROM qryPersonal_alle", dbOpenDynaset)
+    objListView.ListItems.Clear
+    Do While Not rst.EOF
+        With objListView
+
+            Set objListitem = .ListItems.Add(, "a" & rst!idPersonal, rst!calcPersonalName)
+
+        End With
+        rst.MoveNext
+    Loop
+    Set db = Nothing
+End Sub
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private Sub ListViewFuellen2()
+    Dim db As DAO.Database
+    Dim rst As DAO.Recordset
+    Dim objListitem2 As MSComctlLib.ListItem
+    Set db = CurrentDb
+    Set rst = db.OpenRecordset("SELECT * FROM qryBewohner_alle", dbOpenDynaset)
+    objListView2.ListItems.Clear
+    Do While Not rst.EOF
+        With objListView2
+
+            Set objListitem2 = .ListItems.Add(, "a" & rst!idBewohner, rst!calcBewohnerName)
+
+        End With
+        rst.MoveNext
+    Loop
+    Set db = Nothing
+End Sub
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Private Sub objListView_ItemCheck(ByVal Item As MSComctlLib.ListItem)
+    'TODO : hier geht implementierung weiter
+    Dim db As DAO.Database
+    Dim lngAusstattungsmerkmalID As Long
+    Set db = CurrentDb
+    lngAusstattungsmerkmalID = Mid(Item.Key, 2)
+    If IsNull(Me!idVeranstaltung) Then
+        Item.Checked = False
+        MsgBox "Legen Sie zunächst ein Fahrzeug an."
+        Exit Sub
+    End If
+    If Item.Checked Then
+        db.Execute "INSERT INTO tblPersonalVeranstaltung(frkVeranstaltung, frkPersonal) VALUES(" & Me!idVeranstaltung & ", " & lngAusstattungsmerkmalID & ")", dbFailOnError
+    Else
+        db.Execute "DELETE FROM tblPersonalVeranstaltung WHERE frkVeranstaltung = " & Me!idVeranstaltung & " AND frkPersonal = " & lngAusstattungsmerkmalID, dbFailOnError
+    End If
+End Sub
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Private Sub objListView2_ItemCheck(ByVal Item As MSComctlLib.ListItem)
+    'TODO : hier geht implementierung weiter
+    Dim db As DAO.Database
+    Dim lngBewohnerID As Long
+    Set db = CurrentDb
+    lngBewohnerID = Mid(Item.Key, 2)
+    If IsNull(Me!idVeranstaltung) Then
+        Item.Checked = False
+        MsgBox "Legen Sie zunächst ein Fahrzeug an."
+        Exit Sub
+    End If
+    If Item.Checked Then
+        db.Execute "INSERT INTO tblBewohnerVeranstaltung(frkVeranstaltung, frkBewohner) VALUES(" & Me!idVeranstaltung & ", " & lngBewohnerID & ")", dbFailOnError
+    Else
+        db.Execute "DELETE FROM tblBewohnerVeranstaltung WHERE frkVeranstaltung = " & Me!idVeranstaltung & " AND frkBewohner = " & lngBewohnerID, dbFailOnError
+    End If
+End Sub
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
